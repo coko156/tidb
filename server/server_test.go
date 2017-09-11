@@ -25,8 +25,8 @@ import (
 	"testing"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/go-sql-driver/mysql"
-	"github.com/ngaut/log"
 	. "github.com/pingcap/check"
 	"github.com/pingcap/tidb/executor"
 	tmysql "github.com/pingcap/tidb/mysql"
@@ -295,7 +295,7 @@ func runTestPreparedString(t *C) {
 	})
 }
 
-func runTestLoadData(c *C) {
+func runTestLoadData(c *C, server *Server) {
 	// create a file and write data.
 	path := "/tmp/load_data_test.csv"
 	fp, err := os.Create(path)
@@ -427,7 +427,7 @@ func runTestLoadData(c *C) {
 	})
 
 	// unsupport ClientLocalFiles capability
-	suite.server.capability ^= tmysql.ClientLocalFiles
+	server.capability ^= tmysql.ClientLocalFiles
 	runTestsOnNewDB(c, func(config *mysql.Config) {
 		config.AllowAllFiles = true
 	}, "LoadData", func(dbt *DBTest) {
@@ -436,7 +436,7 @@ func runTestLoadData(c *C) {
 		dbt.Assert(err, NotNil)
 		checkErrorCode(c, err, tmysql.ErrNotAllowedCommand)
 	})
-	suite.server.capability |= tmysql.ClientLocalFiles
+	server.capability |= tmysql.ClientLocalFiles
 }
 
 func runTestConcurrentUpdate(c *C) {
